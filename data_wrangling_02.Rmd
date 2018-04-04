@@ -1,0 +1,25 @@
+---
+title: 'Data Wrangling Exercise 2: Dealing with missing values'
+author: "Roy Radich"
+date: "March 25, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Comments
+
+N/A
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+
+titanic_df <- read.csv("titanic3.csv", header=TRUE,  stringsAsFactors=FALSE)
+titanic_df$embarked[titanic_df$embarked==""] <- "S"
+titanic_df$age[is.na(titanic_df$age)==TRUE] <- mean(titanic_df$age, na.rm=TRUE)
+titanic_df$boat[titanic_df$boat==""] <- "NA"
+titanic_df <- mutate(titanic_df, has_cabin_number=ifelse(titanic_df$cabin=="", 0, 1)) 
+write.csv(titanic_df, "titanic_clean.csv", row.names=FALSE, na="")
+```

@@ -1,0 +1,48 @@
+---
+title: 'Data Wrangling Exercise 1: Basic Data Manipulation'
+author: "Roy Radich"
+date: "March 22, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Comments
+
+I attempted to make the code as generic and compact as possible. 
+
+It assumes that the input file will always have the same columns.
+
+Ideally the coding lists would be read from an external file.
+
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(stringr)
+
+prod_df <- read.csv("refine_original.csv", header=TRUE)
+
+co_codes <- c("philips", "akzo", "van houten", "unilever")
+prod_codes <- c("Smartphone", "TV", "Laptop", "Tablet")
+names(prod_codes) <- c("p", "v", "x", "q")
+
+d <- adist(prod_df$company, co_codes)
+i <- apply(d, 1, which.min)
+prod_df$company <- co_codes[i]
+
+prod_df <- 
+  prod_df %>%
+  separate(Product.code...number, c("product_code", "product_number"), sep="-") %>%
+  mutate(product_category=prod_codes[substr(prod_df[,2], 1, 1)]) %>%
+  mutate(company_var=paste0("company_", str_replace(company, " ", "_")), company_val=1) %>%
+  mutate(product_var=paste0("product_", tolower(product_category)), product_val=1) %>%  
+  spread(company_var, company_val, fill=0) %>%
+  spread(product_var, product_val, fill=0) 
+
+write.csv(prod_df, "refine_clean.csv", row.names=FALSE)
+
+library(knitr)
+kable(prod_df)
+```
